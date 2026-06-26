@@ -1,0 +1,13 @@
+{
+  "name": "drinkoo-website",
+  "version": "1.0.0",
+  "description": "Drinkoo beverage company website with product catalog, cart, login, dashboard, and tracking",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
