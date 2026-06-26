@@ -1,0 +1,281 @@
+<!-- Drinkoo Chat Widget -->
+<div id="drinkoo-chat-widget" class="chat-widget">
+  <button class="chat-toggle" id="chat-toggle" title="Chat with Drinkoo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+  </button>
+
+  <div class="chat-window" id="chat-window" style="display: none;">
+    <div class="chat-header">
+      <h3>Drinkoo Assistant</h3>
+      <button class="chat-close" id="chat-close">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-message bot">
+        <p>Hi! 👋 I'm here to help you discover Drinkoo beverages. What would you like to know about our drinks?</p>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Ask about our drinks..." />
+      <button id="chat-send">Send</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  #drinkoo-chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .chat-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1d4f8c 0%, #3a83d0 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(29, 79, 140, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .chat-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(29, 79, 140, 0.4);
+  }
+
+  .chat-toggle svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 380px;
+    height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chat-header {
+    background: linear-gradient(135deg, #0e2647 0%, #1d4f8c 100%);
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .chat-header h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .chat-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .chat-message {
+    display: flex;
+    margin-bottom: 8px;
+  }
+
+  .chat-message p {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    max-width: 85%;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .chat-message.user {
+    justify-content: flex-end;
+  }
+
+  .chat-message.user p {
+    background: #1d4f8c;
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+  }
+
+  .chat-message.bot p {
+    background: #f0f4f8;
+    color: #16324f;
+    border-radius: 18px 18px 18px 4px;
+  }
+
+  .chat-message.loading p {
+    background: #e8eef7;
+    color: #6e7b8d;
+  }
+
+  .chat-input-area {
+    padding: 12px;
+    border-top: 1px solid #dce4ef;
+    display: flex;
+    gap: 8px;
+  }
+
+  #chat-input {
+    flex: 1;
+    border: 1px solid #dce4ef;
+    border-radius: 24px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  #chat-input:focus {
+    border-color: #3a83d0;
+    box-shadow: 0 0 0 3px rgba(58, 131, 208, 0.1);
+  }
+
+  #chat-send {
+    background: #1d4f8c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  #chat-send:hover {
+    background: #0e2647;
+  }
+
+  #chat-send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 480px) {
+    .chat-window {
+      width: 100vw;
+      height: 100vh;
+      max-width: 380px;
+      bottom: 0;
+      right: 0;
+      border-radius: 0;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    let sessionId = localStorage.getItem('drinkoo_chat_session') || 'session_' + Date.now();
+    localStorage.setItem('drinkoo_chat_session', sessionId);
+
+    const toggle = document.getElementById('chat-toggle');
+    const closeBtn = document.getElementById('chat-close');
+    const chatWindow = document.getElementById('chat-window');
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('chat-send');
+    const messagesDiv = document.getElementById('chat-messages');
+
+    let isLoading = false;
+
+    toggle.addEventListener('click', () => {
+      chatWindow.style.display = chatWindow.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    closeBtn.addEventListener('click', () => {
+      chatWindow.style.display = 'none';
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !isLoading) sendMessage();
+    });
+
+    async function sendMessage() {
+      const message = input.value.trim();
+      if (!message || isLoading) return;
+
+      // Add user message
+      addMessage(message, 'user');
+      input.value = '';
+      isLoading = true;
+      sendBtn.disabled = true;
+
+      // Add loading indicator
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'chat-message loading';
+      loadingDiv.innerHTML = '<p>Thinking...</p>';
+      messagesDiv.appendChild(loadingDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, sessionId })
+        });
+
+        if (!response.ok) throw new Error('Chat failed');
+        const data = await response.json();
+
+        loadingDiv.remove();
+        addMessage(data.reply, 'bot');
+      } catch (error) {
+        loadingDiv.remove();
+        addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+      }
+
+      isLoading = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+
+    function addMessage(text, role) {
+      const div = document.createElement('div');
+      div.className = 'chat-message ' + role;
+      const p = document.createElement('p');
+      p.textContent = text;
+      div.appendChild(p);
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+  })();
+</script>
